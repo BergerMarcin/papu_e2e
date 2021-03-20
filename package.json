@@ -1,0 +1,24 @@
+{
+  "name": "papu_e2e",
+  "version": "1.0.0",
+  "description": "Cypress E2E tests for https://papu.io",
+  "main": "index.js",
+"scripts": {
+  "test": "cypress run –headless",
+  "test:firefox": "cypress run –headless --browser firefox",
+  "test:chrome": "cypress run –headless --browser chrome",
+  "cy": "cypress open",
+  "cy:firefox": "cypress run --browser firefox",
+  "cy:chrome": "cypress run --browser chrome"
+},
+  "keywords": [
+    "Cypress",
+    "E2E"
+  ],
+  "author": "Marcin Berger",
+  "license": "MIT",
+  "devDependencies": {
+    "cypress": "^6.8.0",
+    "eslint-plugin-cypress": "^2.11.2"
+  }
+}
