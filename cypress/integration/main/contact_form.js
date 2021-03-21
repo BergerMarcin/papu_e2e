@@ -34,11 +34,11 @@ const SUCCESS_CONFIRMATION_TEXT = 'Formularz zosta\u0142 wys\u0142any. W przypad
  */
 describe('Test for CONTACT-FORM for user-DEMO-TESTING', () => {
   before( () => {
-    cy.visitDefault('http://papu.io/de/')
+    cy.visitDefault()   // test: 'http://papu.io/de/'
     // TODO: @ new version add feature of changing devices
-    cy.setDevice()
+    cy.setDevice('')    // test: ''
     // TODO: @ new version add feature of changing languages (note: there are urls: http://papu.io/en/ http://papu.io/de/ - to be discussed with routing master / documentation)
-    cy.chooseLang()
+    cy.chooseLang()     // test 'SVGA'
   })
 
   it ('At least 1 TEST-DEMO button should exist', () => {

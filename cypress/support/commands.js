@@ -9,7 +9,7 @@ Cypress.Commands.add('visitDefault', (url = 'http://papu.io/') => {
 })
 
 /**
- * Only setting viewport resolution (not )
+ * Only setting viewport resolution (not changing environment into mobile or tablet - not possible for Cypress)
  */
 Cypress.Commands.add('setDevice', (type) => {
   switch (type) {
@@ -53,25 +53,18 @@ Cypress.Commands.add('setDevice', (type) => {
 
 Cypress.Commands.add('chooseLang', (lang) => {
   // settings
-  // TODO: @ new version for feature of changing languages: change from footerLangBtnIndex to find visible icon of languages
   const LANGUAGES = {
     pl: {
       langCode: 'pl-PL',
-      langBtnSelector: `img[alt = "Polski"]`,
-      footerLangBtnIndex: 4,
-      scrollBottom: true
+      langBtnSelector: `img[alt = "Polski"]`
     },
     en: {
       langCode: 'en-GB',
-      langBtnSelector: `img[alt = "English"]`,
-      footerLangBtnIndex: 4,
-      scrollBottom: true
+      langBtnSelector: `img[alt = "English"]`
     },
     de: {
       langCode: 'de-DE',
-      langBtnSelector: `img[alt = "Deutsch"]`,
-      footerLangBtnIndex: 4,
-      scrollBottom: true
+      langBtnSelector: `img[alt = "Deutsch"]`
     }
   }
 
@@ -80,13 +73,17 @@ Cypress.Commands.add('chooseLang', (lang) => {
 
   // core
   if (cy.$$('html').attr('lang') !== LANG.langCode) {
-    console.log("LANG.langBtnSelector: ", cy.$$(LANG.langBtnSelector));
-    LANG.scrollBottom && cy.scrollTo('bottom')
-    cy.get(LANG.langBtnSelector).eq(LANG.footerLangBtnIndex).click()
+    // looking for visible language button (& validate)
+    const langBtns = cy.$$(LANG.langBtnSelector)
+    let visibleIndex = 0
+    while (!langBtns.eq(visibleIndex).is(':visible')) visibleIndex++
+    expect(visibleIndex, 'Visible language buttons found').to.be.lt(langBtns.length)
+
+    // change language (& validate
+    cy.get(LANG.langBtnSelector).eq(visibleIndex).click()
     cy.wait(100)
     cy.get('html').should((htmlElem) => {
       expect(htmlElem.attr('lang')).to.be.equal(LANG.langCode)
     })
-    LANG.scrollBottom && cy.scrollTo('top')
   }
 })
