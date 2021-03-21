@@ -73,17 +73,36 @@ Cypress.Commands.add('chooseLang', (lang) => {
 
   // core
   if (cy.$$('html').attr('lang') !== LANG.langCode) {
-    // looking for visible language button (& validate)
-    const langBtns = cy.$$(LANG.langBtnSelector)
-    let visibleIndex = 0
-    while (!langBtns.eq(visibleIndex).is(':visible')) visibleIndex++
-    expect(visibleIndex, 'Visible language buttons found').to.be.lt(langBtns.length)
+    // check for visible language button (& validate)
+    cy.validateElementIfExistsAndVisible(LANG.langBtnSelector, 'language button')
 
-    // change language (& validate
-    cy.get(LANG.langBtnSelector).eq(visibleIndex).click()
+    // change language (& validate)
+    cy.get(LANG.langBtnSelector)
+      .eq(findFirstVisibleElementIndex(LANG.langBtnSelector, 'language button'))
+      .click()
     cy.wait(100)
     cy.get('html').should((htmlElem) => {
       expect(htmlElem.attr('lang')).to.be.equal(LANG.langCode)
     })
   }
+})
+
+export const findFirstVisibleElementIndex = (elementsSelector, elementsDescription) => {
+  const elements = cy.$$(elementsSelector)
+  let visibleIndex = 0
+  while (!elements.eq(visibleIndex).is(':visible')) visibleIndex++
+  return visibleIndex < elements.length ? visibleIndex : -1
+}
+
+Cypress.Commands.add('validateElementIfExistsAndVisible', (elementsSelector, elementsDescription) => {
+  it (`Exists at least 1 ${elementsDescription}`, () => {
+    cy.get(elementsSelector).should((elements) => {
+      expect(elements.length).to.be.gte(1)
+    })
+  })
+
+  it (`Visible at least 1 ${elementsDescription}`, () => {
+    expect(findFirstVisibleElementIndex(elementsSelector, elementsDescription), `Found visible ${elementsDescription}`)
+      .to.be.gt(-1)
+  })
 })
