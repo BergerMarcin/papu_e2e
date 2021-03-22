@@ -1,3 +1,5 @@
+import {findFirstVisibleElementIndex} from './common_func';
+
 // ***********************************************
 // For more comprehensive examples of custom
 // commands please read more here:
@@ -78,7 +80,7 @@ Cypress.Commands.add('chooseLang', (lang) => {
 
     // change language (& validate)
     cy.get(LANG.langBtnSelector)
-      .eq(findFirstVisibleElementIndex(LANG.langBtnSelector, 'language button'))
+      .eq(findFirstVisibleElementIndex(LANG.langBtnSelector))
       .click()
     cy.wait(100)
     cy.get('html').should((htmlElem) => {
@@ -86,13 +88,6 @@ Cypress.Commands.add('chooseLang', (lang) => {
     })
   }
 })
-
-export const findFirstVisibleElementIndex = (elementsSelector, elementsDescription) => {
-  const elements = cy.$$(elementsSelector)
-  let visibleIndex = 0
-  while (!elements.eq(visibleIndex).is(':visible')) visibleIndex++
-  return visibleIndex < elements.length ? visibleIndex : -1
-}
 
 Cypress.Commands.add('validateElementIfExistsAndVisible', (elementsSelector, elementsDescription) => {
   it (`Exists at least 1 ${elementsDescription}`, () => {
@@ -102,7 +97,7 @@ Cypress.Commands.add('validateElementIfExistsAndVisible', (elementsSelector, ele
   })
 
   it (`Visible at least 1 ${elementsDescription}`, () => {
-    expect(findFirstVisibleElementIndex(elementsSelector, elementsDescription), `Found visible ${elementsDescription}`)
+    expect(findFirstVisibleElementIndex(elementsSelector), `Found visible ${elementsDescription}`)
       .to.be.gt(-1)
   })
 })

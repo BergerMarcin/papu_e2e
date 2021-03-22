@@ -1,5 +1,6 @@
-// require('../../support/commands')
+// require('../../support')
 import '../../support';
+import {findFirstVisibleElementIndex} from '../../support/common_func';
 
 
 /* TEST SETTINGS ---------------------------------------------------------------------------------------------------- */
@@ -17,24 +18,50 @@ const TEST_DEMO_BUTTON = {
   }
 }
 const TEST_DEMO_CONTACT_FORM = {
-  selector: '.dialog-message.dialog-lightbox-message',
-  validation: ''
+  selector: '.dialog-message.dialog-lightbox-message'
+}
+const EMAIL_INPUT = {
+  selector: '#form-field-email',
+  validationElementNotExist: '.elementor-field-type-email > span.elementor-message.elementor-message-danger'
+}
+const TEST_DEMO_CONTACT_FORM_SUBMIT_BUTTON = {
+  selector: 'button[type="submit"]'
 }
 const SUCCESS_CONFIRMATION_TEXT = 'Formularz zosta\u0142 wys\u0142any. W przypadku pyta\u0144 napisz do nas na adres sales@papu.io'
 
-// FIXTURES WRONG
-const FAKE_DATA_EMAIL_TESTS = [
-  {
-    value: 'test@testrestaurant',
-    result: false
-  }
+// FIXTURES
+// below causing regex mismatch @ input field
+const INVALID_EMAILS_ACC_REGEX = [
+  'test@testrestaurant',
+  'test@$testrestaurant.pl',
+  'test@.pl',
+// thanks to: https://codefool.tumblr.com/post/15288874550/list-of-valid-and-invalid-email-addresses
+  "plainaddress",
+  "#@%^%#$@#$@#.com",
+  "@example.com",
+  "Joe Smith <email@example.com>",
+  "email.example.com",
+  "email@example@example.com",
+  "あいうえお@example.com",
+  "email@example.com (Joe Smith)",
+  "email@example",
+  "email@-example.com",
+  "email@example..com"
 ]
-
-// FIXTURES CORRECT
+// below causing response code 500 @ request
+const INVALID_EMAILS_ACC_EMAIL_SPEC = [
+  ".email@example.com",
+  "email.@example.com",
+  "email..email@example.com",
+  "email@example.web",
+  "email@111.222.333.44444",
+  "Abc..123@example.com"
+]
+// FIXTURES - CORRECT EMAILS
 // !!! WARNING: BELOW DATA WILL BE ADD TO DB (and it should be treated as a fake or removed)
-const FAKE_DATA_CORRECT = {
+const VALID_FAKE_DATA = {
   restaurantName: 'Test Restaurant',
-  email: 'test@testrestaurant.pl',
+  email: ' test.test2a.Test2-a@testrestaurant.com.pl   ',
   phone: '600 000 000',
   city: 'Poznań'
 }
@@ -46,11 +73,11 @@ const FAKE_DATA_CORRECT = {
  * Testing contact form for DEMO-TESTING of landing page
  * !!!
  * WARNING:
- * AFTER THE TEST FAKE_DATA_CORRECT should be added to the DB (and it should be treated as a fake or removed)
+ * AFTER THE TEST VALID_FAKE_DATA should be added to the DB (and it should be treated as a fake or removed)
  * !!!
  */
 describe(`Test for CONTACT-FORM for user-DEMO-TESTING`, () => {
-  before( () => {
+  before(() => {
     cy.visitDefault(URL)
     // TODO: @ new version add feature of changing devices
     cy.setDevice(DEVICE)
@@ -58,51 +85,67 @@ describe(`Test for CONTACT-FORM for user-DEMO-TESTING`, () => {
     cy.chooseLang(LANG)
   })
 
-  it (`There is at least 1 visible TEST-DEMO button. All TEST-DEMO buttons have proper text "${TEST_DEMO_BUTTON.validationContent[LANG]}"\``, () => {
+  it(`There is at least 1 visible TEST-DEMO button. All TEST-DEMO buttons have proper text "${TEST_DEMO_BUTTON.validationContent[LANG]}"\``, () => {
     cy.validateElementIfExistsAndVisible(TEST_DEMO_BUTTON.selector, 'TEST-DEMO button')
-    cy.get(TEST_DEMO_BUTTON.selector).each(element => {
-      expect(element.text().toUpperCase(),
-        `All TEST-DEMO buttons should have text "${TEST_DEMO_BUTTON.validationContent[LANG]}"`)
-        .to.contain(TEST_DEMO_BUTTON.validationContent[LANG].toUpperCase())
+    cy.get(TEST_DEMO_BUTTON.selector).each(elem => {
+      if (elem.is(':visible')) {
+        expect(elem.text().toUpperCase(),
+          `All TEST-DEMO buttons should have text "${TEST_DEMO_BUTTON.validationContent[LANG]}"`)
+          .to.contain(TEST_DEMO_BUTTON.validationContent[LANG].toUpperCase())
+      }
     })
   })
 
   it('All TEST-DEMO buttons should display contact-form', () => {
-    cy.get('body').click(0,0)
-    cy.wait(1000)
+    cy.get('body').click(0, 0)
     cy.get(TEST_DEMO_CONTACT_FORM.selector).should('not.exist')
     cy.get(TEST_DEMO_BUTTON.selector).each((elem, index) => {
       if (elem.is(':visible')) {
         cy.get(TEST_DEMO_BUTTON.selector).eq(index).click()
-        cy.wait(1000)
         cy.get(TEST_DEMO_CONTACT_FORM.selector).should('be.visible')
-        cy.get('body').click(0,0)
-        cy.wait(100)
-        // TODO: wyjaśnić sobie, dlaczego tutaj nie działało cy.get(TEST_DEMO_CONTACT_FORM.selector).should('not.exist'), gdy powyżej działało - czyżby to kod zamknięty w jQuery z powodu otoczenia go jQuerowym each?
+        cy.get('body').click(0, 0)
+        // TODO: doczytać sobie, dlaczego tutaj nie działało cy.get(TEST_DEMO_CONTACT_FORM.selector).should('not.exist'), gdy powyżej działało - czyżby to kod zamknięty w jQuery z powodu otoczenia go jQuerowym each (chyba utrata promisowego Cypressa)?
         expect(cy.$$(TEST_DEMO_CONTACT_FORM.selector).length).to.be.eq(0)
       }
     })
   })
 
-  // it('Email should be validated', () => {
-  //   let ind = 0
-  //   while (ind < FAKE_DATA_EMAIL_TESTS.length) {
-  //     const divFormElem = document.getElementById('#form-field-email')
-  //     console.log(`divFormElem BEFORE type: `, divFormElem)
-  //     cy.get('#form-field-email').type(FAKE_DATA_EMAIL_TESTS[ind].value)
-  //     cy.wait(50)
-  //     console.log(`divFormElem AFTER type: `, divFormElem)
-  //     // cy.get().should(FAKE_DATA_EMAIL_TESTS[ind].result)
-  //     ind++
-  //   }
-  // })
+  it('Contact-form should be visible, should have email field visible with required attribute and should have visible submit button', () => {
+    cy.get(TEST_DEMO_BUTTON.selector)
+      .eq(findFirstVisibleElementIndex(TEST_DEMO_BUTTON.selector))
+      .click()
+    cy.get(TEST_DEMO_CONTACT_FORM.selector).should('be.visible')
+    cy.get(EMAIL_INPUT.selector).should('be.visible')
+    cy.get(EMAIL_INPUT.selector).should('have.attr', 'required')
+    cy.get(TEST_DEMO_CONTACT_FORM_SUBMIT_BUTTON.selector).should('be.visible')
+  })
+
+  it('Invalid emails should NOT be validated by REGEX of the email-input', () => {
+    let ind = 0
+    while (ind < INVALID_EMAILS_ACC_REGEX.length) {
+      cy.get(EMAIL_INPUT.selector).type(INVALID_EMAILS_ACC_REGEX[ind])
+      cy.get(TEST_DEMO_CONTACT_FORM_SUBMIT_BUTTON.selector).click()
+      cy.on('uncaught:exception', (err, runnable) => {
+        expect(err.message).to.exist
+        return false
+      })
+      cy.get(EMAIL_INPUT.validationElementNotExist).should('be.visible')
+      cy.get(EMAIL_INPUT.selector).clear()
+      ind++
+    }
+  })
 
   // it('At least 1 checkbox should be checked', () => {
   //
   // })
   //
   // it('There should be sent request POST with user-email', () => {
-  //
+  // cy.get(EMAIL_INPUT.selector).should('be.visible')
+  // cy.get(EMAIL_INPUT.selector).type(VALID_FAKE_DATA.email)
+  // cy.wait(200)
+  // cy.get(TEST_DEMO_CONTACT_FORM_SUBMIT_BUTTON.selector).click()
+  // cy.wait(200)
+  // cy.get(EMAIL_INPUT.validationElementNotExist).should('not.exist')
   // })
   //
   // it(`Response should contain "${CONFIRMATION_TEXT} - SUCCESS CONFIRMATION"`, () => {
