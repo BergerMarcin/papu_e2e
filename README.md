@@ -62,3 +62,4 @@ No issues
 Next version of that test will contain following features:
 1. E2E tests for all languages: EN, DE
 2. E2E tests for different resolutions
+3. E2E tests with other inputs

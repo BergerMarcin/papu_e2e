@@ -1,6 +1,5 @@
-// require('../../support')
 import '../../support';
-import {findFirstVisibleElementIndex} from '../../support/common_func';
+import {findFirstVisibleElementIndex, readBinaryStringFromArrayBuffer} from '../../support/common_func';
 
 
 /* TEST SETTINGS ---------------------------------------------------------------------------------------------------- */
@@ -20,7 +19,7 @@ const TEST_DEMO_BUTTON = {
 const TEST_DEMO_CONTACT_FORM = {selector: '.dialog-message.dialog-lightbox-message'}
 const EMAIL_INPUT = {
   selector: '#form-field-email',
-  validationElementNotExist: '.elementor-field-type-email > span.elementor-message.elementor-message-danger'
+  errorSelector: '.elementor-field-type-email > span.elementor-message.elementor-message-danger'
 }
 const EMAIL_CHECKBOX = {selector: 'input[type = "checkbox"][value="e-mail"]'}
 const PHONE_CHECKBOX = {selector: 'input[type = "checkbox"][value="polaczenia-telefoniczne"]'}
@@ -66,22 +65,23 @@ const INVALID_EMAILS_ACC_EMAIL_SPEC = [
 // FIXTURES - CORRECT EMAILS
 // !!! WARNING: BELOW DATA WILL BE ADD TO DB (and it should be treated as a fake or removed)
 const VALID_FAKE_DATA = {
-  restaurantName: 'Test Restaurant',
+  // restaurantName: 'Test Restaurant',   // for future development
   email: ' test.test2a.Test2-a@testrestaurant.com.pl   ',
-  phone: '600 000 000',
-  city: 'Poznań'
+  // phone: '600 000 000',                // for future development
+  // city: 'Poznań'                       // for future development
+}
+
+// FINAL TEST - REQUEST
+const REQUEST_CONTACT_FORM = {
+  url: 'https://papu.io/wp-admin/admin-ajax.php',
+  method: 'POST',
+  email: VALID_FAKE_DATA.email,
+  validationContent: SUCCESS_SUBMIT.validationContent,
+  responseStatusCode: 200
 }
 
 
 /* TEST ------------------------------------------------------------------------------------------------------------- */
-
-/**
- * Testing contact form for DEMO-TESTING of landing page
- * !!!
- * WARNING:
- * AFTER THE TEST VALID_FAKE_DATA should be added to the DB (and it should be treated as a fake or removed)
- * !!!
- */
 describe(`Test for CONTACT-FORM for user-DEMO-TESTING`, () => {
   before(() => {
     cy.visitDefault(URL)
@@ -102,19 +102,19 @@ describe(`Test for CONTACT-FORM for user-DEMO-TESTING`, () => {
     })
   })
 
-  // it('All TEST-DEMO buttons should display contact-form', () => {
-  //   cy.get('body').click(0, 0)
-  //   cy.get(TEST_DEMO_CONTACT_FORM.selector).should('not.exist')
-  //   cy.get(TEST_DEMO_BUTTON.selector).each((elem, index) => {
-  //     if (elem.is(':visible')) {
-  //       cy.get(TEST_DEMO_BUTTON.selector).eq(index).click()
-  //       cy.get(TEST_DEMO_CONTACT_FORM.selector).should('be.visible')
-  //       cy.get('body').click(0, 0)
-  //       // TODO: doczytać sobie, dlaczego tutaj nie działało cy.get(TEST_DEMO_CONTACT_FORM.selector).should('not.exist'), gdy powyżej działało - czyżby to kod zamknięty w jQuery z powodu otoczenia go jQuerowym each (chyba utrata promisowego Cypressa)?
-  //       expect(cy.$$(TEST_DEMO_CONTACT_FORM.selector).length).to.be.eq(0)
-  //     }
-  //   })
-  // })
+  it('All TEST-DEMO buttons should display contact-form', () => {
+    cy.get('body').click(0, 0)
+    cy.get(TEST_DEMO_CONTACT_FORM.selector).should('not.exist')
+    cy.get(TEST_DEMO_BUTTON.selector).each((elem, index) => {
+      if (elem.is(':visible')) {
+        cy.get(TEST_DEMO_BUTTON.selector).eq(index).click()
+        cy.get(TEST_DEMO_CONTACT_FORM.selector).should('be.visible')
+        cy.get('body').click(0, 0)
+        // TODO: doczytać sobie, dlaczego tutaj nie działało cy.get(TEST_DEMO_CONTACT_FORM.selector).should('not.exist'), gdy powyżej działało - czyżby to kod zamknięty w jQuery z powodu otoczenia go jQuerowym each (chyba utrata promisowego Cypressa)?
+        expect(cy.$$(TEST_DEMO_CONTACT_FORM.selector).length).to.be.eq(0)
+      }
+    })
+  })
 
   it('Contact-form should be OK (is visible; has email field with required attribute; has checkboxes; has submit button)', () => {
     cy.get(TEST_DEMO_BUTTON.selector)
@@ -128,42 +128,40 @@ describe(`Test for CONTACT-FORM for user-DEMO-TESTING`, () => {
     cy.get(SUBMIT_BUTTON.selector).should('be.visible')
   })
 
-  // it('Invalid emails should NOT be validated by REGEX of the email-input', () => {
-  //   cy.get(EMAIL_CHECKBOX.selector).click()
-  //   let ind = 0
-  //   while (ind < INVALID_EMAILS_ACC_REGEX.length) {
-  //     cy.get(EMAIL_INPUT.selector).type(INVALID_EMAILS_ACC_REGEX[ind])
-  //     cy.get(SUBMIT_BUTTON.selector).click()
-  //     cy.on('uncaught:exception', (err, runnable) => {
-  //       expect(err.message).to.exist
-  //       return false
-  //     })
-  //     cy.wait(500)
-  //     cy.get(SUCCESS_SUBMIT.selector).should('not.exist')
-  //     cy.get(EMAIL_INPUT.validationElementNotExist).should('be.visible')
-  //     cy.get(EMAIL_INPUT.selector).clear()
-  //     ind++
-  //   }
-  // })
+  it('Invalid emails should NOT be validated by REGEX of the email-input', () => {
+    cy.get(EMAIL_CHECKBOX.selector).click()
+    let ind = 0
+    while (ind < INVALID_EMAILS_ACC_REGEX.length) {
+      cy.get(EMAIL_INPUT.selector).type(INVALID_EMAILS_ACC_REGEX[ind])
+      cy.get(SUBMIT_BUTTON.selector).click()
+      cy.on('uncaught:exception', (err, runnable) => {
+        expect(err.message).to.exist
+        return false
+      })
+      cy.get(EMAIL_INPUT.errorSelector).should('be.visible')
+      cy.get(SUCCESS_SUBMIT.selector).should('not.exist')
+      cy.get(EMAIL_INPUT.selector).clear()
+      ind++
+    }
+  })
 
-  // it('Invalid emails (but valid acc. REGEX) should cause error after submission', () => {
-  //   cy.get(EMAIL_CHECKBOX.selector).click()
-  //   let ind = 0
-  //   while (ind < INVALID_EMAILS_ACC_EMAIL_SPEC.length) {
-  //     cy.get(EMAIL_INPUT.selector).type(INVALID_EMAILS_ACC_EMAIL_SPEC[ind])
-  //     cy.get(SUBMIT_BUTTON.selector).click()
-  //     cy.on('uncaught:exception', (err, runnable) => {
-  //       expect(err.message).to.exist
-  //       return false
-  //     })
-  //     cy.wait(500)
-  //     cy.get(FAILED_SUBMIT.selector).should('be.visible')
-  //     cy.get(SUCCESS_SUBMIT.selector).should('not.exist')
-  //     cy.get(EMAIL_INPUT.selector).clear()
-  //     ind++
-  //   }
-  // })
-
+  it('Invalid emails (but valid acc. REGEX) should cause error after submission', () => {
+    cy.get(EMAIL_CHECKBOX.selector).click()
+    let ind = 0
+    while (ind < INVALID_EMAILS_ACC_EMAIL_SPEC.length) {
+      cy.get(EMAIL_INPUT.selector).type(INVALID_EMAILS_ACC_EMAIL_SPEC[ind])
+      cy.get(SUBMIT_BUTTON.selector).click()
+      cy.on('uncaught:exception', (err, runnable) => {
+        expect(err.message).to.exist
+        return false
+      })
+      cy.get(FAILED_SUBMIT.selector).should('be.visible')
+      cy.get(SUCCESS_SUBMIT.selector).should('not.exist')
+      cy.get(EMAIL_INPUT.errorSelector).should('not.exist')
+      cy.get(EMAIL_INPUT.selector).clear()
+      ind++
+    }
+  })
   it('At least 1 checkbox should be checked', () => {
     // Part 1. At least 1 checkbox is checked - SUCCESS
     const checkedTest = [[true, true], [true, false], [false, true]]
@@ -172,7 +170,6 @@ describe(`Test for CONTACT-FORM for user-DEMO-TESTING`, () => {
       if (cy.$$(EMAIL_CHECKBOX.selector).checked !== checkedTest[ind][0]) cy.get(EMAIL_CHECKBOX.selector).click()
       if (cy.$$(PHONE_CHECKBOX.selector).checked !== checkedTest[ind][1]) cy.get(PHONE_CHECKBOX.selector).click()
       cy.get(EMAIL_INPUT.selector).clear().type(VALID_FAKE_DATA.email)
-      cy.wait(1000)
       cy.get(SUBMIT_BUTTON.selector).click()
       cy.get(SUCCESS_SUBMIT.selector).should('be.visible')
       cy.get(FAILED_SUBMIT.selector).should('not.exist')
@@ -187,7 +184,6 @@ describe(`Test for CONTACT-FORM for user-DEMO-TESTING`, () => {
     // if (cy.$$(EMAIL_CHECKBOX.selector).checked) cy.get(EMAIL_CHECKBOX.selector).click()
     // if (cy.$$(PHONE_CHECKBOX.selector).checked) cy.get(PHONE_CHECKBOX.selector).click()
     // cy.get(EMAIL_INPUT.selector).clear().type(VALID_FAKE_DATA.email)
-    // cy.wait(1000)
     // cy.get(SUBMIT_BUTTON.selector).click()
     // cy.on('uncaught:exception', (err, runnable) => {
     //   expect(err.message).to.exist
@@ -197,20 +193,32 @@ describe(`Test for CONTACT-FORM for user-DEMO-TESTING`, () => {
     // cy.get(SUCCESS_SUBMIT.selector).should('not.exist')
   })
 
-  // it('There should be sent request POST with user-email', () => {
-  // cy.get(EMAIL_INPUT.selector).should('be.visible')
-  // cy.get(EMAIL_INPUT.selector).type(VALID_FAKE_DATA.email)
-  // cy.wait(200)
-  // cy.get(SUBMIT_BUTTON.selector).click()
-  // cy.wait(200)
-  // cy.get(EMAIL_INPUT.validationElementNotExist).should('not.exist')
-  // })
-  //
-  // it(`Response should contain "${CONFIRMATION_TEXT} - SUCCESS CONFIRMATION"`, () => {
-  //
-  // })
-  //
-  // it(`Form should contain "${CONFIRMATION_TEXT}" - SUCCESS CONFIRMATION`, () => {
-  //
-  // })
+
+  // FINAL TESTS
+  it(`FINAL TEST. After submit contact form properly, there should be sent request POST with user-contact-email, response should have text which should be visible in contact form - text: ${SUCCESS_SUBMIT.validationContent.pl}`, () => {
+    // preparing test
+    cy.intercept(REQUEST_CONTACT_FORM.method, REQUEST_CONTACT_FORM.url).as('interceptFormRequest')
+
+    // fill-in data and submit
+    cy.get(EMAIL_INPUT.selector).clear().type(REQUEST_CONTACT_FORM.email)
+    if (!cy.$$(EMAIL_CHECKBOX.selector).checked) cy.get(EMAIL_CHECKBOX.selector).click()
+    cy.get(SUBMIT_BUTTON.selector).click()
+    cy.get(SUCCESS_SUBMIT.selector).should('be.visible')
+    expect(SUCCESS_SUBMIT.validationContent.pl).to.be.eq(REQUEST_CONTACT_FORM.validationContent.pl)
+    cy.get(SUCCESS_SUBMIT.selector).should('contain.text', SUCCESS_SUBMIT.validationContent.pl)
+    cy.get(FAILED_SUBMIT.selector).should('not.exist')
+    cy.get(EMAIL_INPUT.errorSelector).should('not.exist')
+
+    // core validation
+    cy.wait('@interceptFormRequest').then(({request, response}) => {
+      readBinaryStringFromArrayBuffer(request.body, (bodyStr) => {
+        expect(bodyStr).to.include(REQUEST_CONTACT_FORM.email.trim())
+      })
+      // below commented simple solution but not recommended - sometimes causing "Maximum call stack size exceeded"
+      // expect(String.fromCharCode.apply(null, new Uint8Array(request.body)))
+      //   .to.include(REQUEST_CONTACT_FORM.email.trim())
+      expect(JSON.stringify(response.body)).to.include(REQUEST_CONTACT_FORM.validationContent.pl)
+      expect(response.statusCode).to.eq(REQUEST_CONTACT_FORM.responseStatusCode)
+    })
+  })
 })
