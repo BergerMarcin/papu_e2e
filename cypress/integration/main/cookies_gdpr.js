@@ -14,6 +14,9 @@ const GDPR_SETTINGS_BUTTON = {selector: 'a.cli_settings_button'}
 const GDPR_SETTINGS_DIALOG = {selector: 'div.cli-modal-content.cli-bar-popup'}
 const GDPR_SETTINGS_SHOW_MORE_BUTTON = {selector: 'a.cli-privacy-readmore'}
 const GDPR_SETTINGS_MORE_DETAILS = {selector: 'div.cli-privacy-content-text > span'}
+const GDPR_SETTINGS_REQUIRED = {selector: 'div.cli-tab-section-container > div:nth-child(1)'}
+const GDPR_SETTINGS_REQUIRED_HEADER = {selector: 'div.cli-tab-section-container > div:nth-child(1) > div.cli-tab-header'}
+const GDPR_SETTINGS_REQUIRED_CONTENT = {selector: 'div.cli-tab-section-container > div:nth-child(1) > div.cli-tab-content'}
 
 /* TEST ------------------------------------------------------------------------------------------------------------- */
 // SCENARIO with "simple" GDPR AGREEMENT
@@ -48,14 +51,21 @@ describe(`Test of GDPR (pl: RODO) - GDRP settings`, () => {
     cy.get(GDPR_BAR.selector).should('be.visible')
     cy.get(GDPR_SETTINGS_BUTTON.selector).should('be.visible')
     cy.get(GDPR_SETTINGS_BUTTON.selector).click()
-    cy.get(GDPR_BAR.selector).should('not.visible')
     cy.get(GDPR_SETTINGS_DIALOG.selector).should('be.visible')
+    cy.get(GDPR_BAR.selector).should('not.visible')
   })
 
   it (`More details should be showed after clicking on Show-more button`, () => {
-    cy.get(GDPR_SETTINGS_MORE_DETAILS.selector).should('not.exist')
     cy.get(GDPR_SETTINGS_SHOW_MORE_BUTTON.selector).should('be.visible')
+    cy.get(GDPR_SETTINGS_MORE_DETAILS.selector).should('not.exist')
     cy.get(GDPR_SETTINGS_SHOW_MORE_BUTTON.selector).click()
     cy.get(GDPR_SETTINGS_MORE_DETAILS.selector).should('be.visible')
+  })
+
+  it (`More details should be showed after clicking on “Niezbędne (Wymagane)”`, () => {
+    cy.get(GDPR_SETTINGS_REQUIRED.selector).should('be.visible')
+    cy.get(GDPR_SETTINGS_REQUIRED_CONTENT.selector).should('not.visible')
+    cy.get(GDPR_SETTINGS_REQUIRED_HEADER.selector).click()
+    cy.get(GDPR_SETTINGS_REQUIRED_CONTENT.selector).should('be.visible')
   })
 })
