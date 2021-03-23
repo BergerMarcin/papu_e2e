@@ -11,11 +11,12 @@ const DEVICE = 'SXGA'             // for test of the test set: ''
 const GDPR_BAR = {selector: '#cookie-law-info-bar'}
 const GDPR_AGREEMENT_BUTTON = {selector: '#cookie_action_close_header'}
 const GDPR_SETTINGS_BUTTON = {selector: 'a.cli_settings_button'}
-const GDPR_SETTINGS_DIALOG = {selector: '.cli-modal-content.cli-bar-popup'}
-
+const GDPR_SETTINGS_DIALOG = {selector: 'div.cli-modal-content.cli-bar-popup'}
+const GDPR_SETTINGS_SHOW_MORE_BUTTON = {selector: 'a.cli-privacy-readmore'}
+const GDPR_SETTINGS_MORE_DETAILS = {selector: 'div.cli-privacy-content-text > span'}
 
 /* TEST ------------------------------------------------------------------------------------------------------------- */
-// SCENARIO with "simple" AGREEMENT
+// SCENARIO with "simple" GDPR AGREEMENT
 describe(`Test of GDPR (pl: RODO) - GDPR-cookies-agreement`, () => {
   before(() => {
     cy.visitDefault(URL)
@@ -49,5 +50,12 @@ describe(`Test of GDPR (pl: RODO) - GDRP settings`, () => {
     cy.get(GDPR_SETTINGS_BUTTON.selector).click()
     cy.get(GDPR_BAR.selector).should('not.visible')
     cy.get(GDPR_SETTINGS_DIALOG.selector).should('be.visible')
+  })
+
+  it (`More details should be showed after clicking on Show-more button`, () => {
+    cy.get(GDPR_SETTINGS_MORE_DETAILS.selector).should('not.exist')
+    cy.get(GDPR_SETTINGS_SHOW_MORE_BUTTON.selector).should('be.visible')
+    cy.get(GDPR_SETTINGS_SHOW_MORE_BUTTON.selector).click()
+    cy.get(GDPR_SETTINGS_MORE_DETAILS.selector).should('be.visible')
   })
 })
