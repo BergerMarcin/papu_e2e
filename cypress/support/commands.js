@@ -101,3 +101,11 @@ Cypress.Commands.add('validateElementIfExistsAndVisible', (elementsSelector, ele
       .to.be.gt(-1)
   })
 })
+
+Cypress.Commands.add('validateGDPRSettingSection', (GDPR_SETTINGS_SECTIONS, sectionElemIndex) => {
+  cy.get(GDPR_SETTINGS_SECTIONS.CONTAINER.selector(sectionElemIndex)).should('be.visible')
+  cy.get(GDPR_SETTINGS_SECTIONS.CONTENT.selector(sectionElemIndex)).should('not.visible')
+  cy.get(GDPR_SETTINGS_SECTIONS.HEADER.selector(sectionElemIndex)).click()
+  cy.get(GDPR_SETTINGS_SECTIONS.CONTENT.selector(sectionElemIndex)).should('be.visible')
+  cy.get(GDPR_SETTINGS_SECTIONS.HEADER.selector(sectionElemIndex)).click()
+})
