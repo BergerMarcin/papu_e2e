@@ -28,18 +28,6 @@ const GDPR_SETTINGS_SECTIONS = {
   ]
 }
 
-const GDPR_SETTINGS_REQUIRED = {selector: 'div.cli-tab-section-container > div:nth-child(1)'}
-const GDPR_SETTINGS_REQUIRED_HEADER = {selector: 'div.cli-tab-section-container > div:nth-child(1) > div.cli-tab-header'}
-const GDPR_SETTINGS_REQUIRED_CONTENT = {selector: 'div.cli-tab-section-container > div:nth-child(1) > div.cli-tab-content'}
-
-const GDPR_SETTINGS_STATISTICS = {selector: 'div.cli-tab-section-container > div:nth-child(2)'}
-const GDPR_SETTINGS_STATISTICS_HEADER = {selector: 'div.cli-tab-section-container > div:nth-child(2) > div.cli-tab-header'}
-const GDPR_SETTINGS_STATISTICS_CONTENT = {selector: 'div.cli-tab-section-container > div:nth-child(2) > div.cli-tab-content'}
-
-const GDPR_SETTINGS_MARKETING = {selector: 'div.cli-tab-section-container > div:nth-child(3)'}
-const GDPR_SETTINGS_MARKETING_HEADER = {selector: 'div.cli-tab-section-container > div:nth-child(3) > div.cli-tab-header'}
-const GDPR_SETTINGS_MARKETING_CONTENT = {selector: 'div.cli-tab-section-container > div:nth-child(3) > div.cli-tab-content'}
-
 /* TEST ------------------------------------------------------------------------------------------------------------- */
 // SCENARIO with "simple" GDPR AGREEMENT
 describe(`Test of GDPR (pl: RODO) - GDPR-cookies-agreement`, () => {
