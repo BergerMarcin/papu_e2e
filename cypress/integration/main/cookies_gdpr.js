@@ -76,12 +76,10 @@ describe(`Test of GDPR (pl: RODO) - GDRP settings`, () => {
     cy.validateGDPRSettingSection(GDPR_SETTINGS_SECTIONS, 0)
   })
 
-  // klikniecie “Statyczne” pokazuje dodatkowy content
   it(`More details should be showed after clicking on “${GDPR_SETTINGS_SECTIONS.SECTION_TYPES[1].name}”`, () => {
     cy.validateGDPRSettingSection(GDPR_SETTINGS_SECTIONS, 1)
   })
 
-  // klikniecie “Marketingowe” pokazuje dodatkowy content
   it(`More details should be showed after clicking on “${GDPR_SETTINGS_SECTIONS.SECTION_TYPES[2].name}”`, () => {
     cy.validateGDPRSettingSection(GDPR_SETTINGS_SECTIONS, 2)
   })

@@ -1,7 +1,10 @@
 # Usage
+## Init
+```npm i```
+
 ## Start tests
- - Cypress as separate window: ```npm run cy```
- - Cypress headless: ```npm run test```
+ - Cypress @ browser: ```npm run cy```
+ - Cypress @ terminal (headless): ```npm run test```
 
 (for more see: `package.json`)
 
