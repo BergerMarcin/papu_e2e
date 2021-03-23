@@ -6,8 +6,10 @@ import {findFirstVisibleElementIndex} from './common_func';
 // https://on.cypress.io/custom-commands
 // ***********************************************
 
-Cypress.Commands.add('visitDefault', (url = 'http://papu.io/') => {
+Cypress.Commands.add('visitDefault', (url = 'http://papu.io/', cookiesDebugAndClear = false) => {
+  Cypress.Cookies.debug(cookiesDebugAndClear)
   cy.visit(url)
+  cookiesDebugAndClear && cy.clearCookies()
 })
 
 /**

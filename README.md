@@ -1,23 +1,40 @@
+# Description
+This is project for https://papu.io E2E tests of:
+- ***contact form*** (to get DEMO TESTS by client/user) 
+- ***cookies/GDPR-policy*** with checking creation cookies 
+
+<br/>
+Minimum specification of the tests: <br/> 
+https://docs.google.com/document/d/1qFwFdG3MUBw-LGeXwwBuHccypu7ICBmvF6kM7hdmF_w/edit
+
+<br/><hr/>
+
 # Usage
 ## Init
-```npm i```
+```npm i``` (for dev Cypress)
 
 ## Start tests
  - Cypress @ browser: ```npm run cy```
- - Cypress @ terminal (headless): ```npm run test```
+ - Cypress @ terminal (headless): ```npm run tests```
 
 (for more see: `package.json`)
 
 ## After test
 Remove from DB data with email `test.test2a.Test2-a@testrestaurant.com.pl`
 
-## General notes
+<br/><hr/>
 
-Invalid emails taken partially thanks to: https://codefool.tumblr.com/post/15288874550/list-of-valid-and-invalid-email-addresses
+# General notes
+
+Invalid emails taken partially thanks to: <br/>
+https://codefool.tumblr.com/post/15288874550/list-of-valid-and-invalid-email-addresses
+
+Parsing ArrayBuffer from request thanks to: <br/>
+Konstantin Smolyanin answer @ https://stackoverflow.com/questions/6965107/converting-between-strings-and-arraybuffers
 
 > NOTE: To run in proper language please set it in before part of the code (hard coded + change texts)
 
-> NOTE: To run in proper desktop, mobile or tablet mode please set it in before part of the code (hard coded)
+> NOTE: To run in proper resolution please set constants `DEVICE` acc. `setDevice` command (hard coded)
 
 <br/>
 <hr/>
@@ -49,20 +66,21 @@ No issues
    - revise `FAILED_SUBMIT.selector` for the test (and check other tests as this selector is used at other tests)
 2. After fixing validation of email addresses: 
    - uncomment emails of `INVALID_EMAILS_ACC_EMAIL_SPEC`
-#### Cookies
+#### Cookies/GDPR-policy
 No issues
 
 ### Minor issues
 #### Contact form
 1. After fixing validation of email addresses with parentheses: 
    - change `test.test2a.Test2-a@testrestaurant.com.pl` to `test.test2a.Test2-a(test)@testrestaurant.com.pl` of `VALID_FAKE_DATA`
-#### Cookies
+#### Cookies/GDPR-policy
 No issues
 
-<hr/>
+<br/><hr/>
 
 ## Future features (tests development)
 Next version of that test will contain following features:
+0. Centralised main configuration settings
 1. E2E tests for all languages: EN, DE
 2. E2E tests for different resolutions
 3. E2E tests with other inputs
